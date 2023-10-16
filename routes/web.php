@@ -1,6 +1,11 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\TodolistController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Middleware\OnlyGuestMiddleware;
+use App\Http\Middleware\OnlyUserMiddleware;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +18,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', [HomeController::class, 'home']);
+
+Route::view('/template', 'template');
+
+Route::controller(UserController::class)->group(function () {
+    Route::get('/login', 'login')->middleware([OnlyGuestMiddleware::class]);
+    Route::post('/login', 'doLogin')->middleware([OnlyGuestMiddleware::class]);
+    Route::post('/logout', 'doLogout')->middleware([OnlyUserMiddleware::class]);
+});
+
+Route::controller(TodolistController::class)->middleware([OnlyUserMiddleware::class])->group(function () {
+    Route::get('/todolist', 'todolist');
+    Route::post('/todolist', 'addTodo');
+    Route::post('/todolist/{id}/delete', 'removeTodo');
 });
